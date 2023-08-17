@@ -1,0 +1,5 @@
+<apex:page controller="getEmailActivity" action="{!getActivity}">
+    <script>
+    	window.history.back();
+    </script>
+</apex:page>

@@ -1,0 +1,100 @@
+public class getEmailActivity {
+    public static void getActivity(){
+        //Map the field Response - 
+        Map<String, String> fieldMapping = new Map<String, String>{
+            
+            'from_email' => 'From_Email__c',
+                'msg_id' => 'msg_id__c',
+                'subject' => 'subject__c',
+                'to_email' => 'to_email__c',
+                'status' => 'status__c',
+                'opens_count' => 'opens_count__c',
+                'clicks_count' => 'clicks_count__c',
+                'last_event_time' => 'last_event_time__c'
+                };
+		//Now we will get the Team Timecards - 
+		HttpRequest requestForTeamTimecards = new HttpRequest();
+        HttpResponse responseOfTeamTimecards = new HttpResponse();
+        Http httpReq = new Http();
+        // Set the request method and headers
+        requestForTeamTimecards.setMethod('GET');       
+        requestForTeamTimecards.setHeader('Content-Type', 'application/json');
+        requestForTeamTimecards.setHeader('Authorization','SG.2w**************************************************');
+        
+		// Set the request URL and timeout
+        requestForTeamTimecards.setEndpoint('https://0c9d-111-118-246-106.ngrok-free.app/get-email-activity'); 
+        requestForTeamTimecards.setTimeout(15000);
+        system.debug('requestForTeamTimecards: '+requestForTeamTimecards);
+        
+        // Send the HTTP request
+        responseOfTeamTimecards = httpReq.send(requestForTeamTimecards);
+        
+        // Debug the response
+        system.debug('responseOfTeamTimecards: '+responseOfTeamTimecards);
+        system.debug('responseOfTeamTimecards: '+responseOfTeamTimecards.getBody());
+        
+        // Parse the JSON response
+        Map<String, Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(responseOfTeamTimecards.getBody());
+        //system.debug('jsonResponse: '+jsonResponse);
+        
+        List<Object> bodyArray = (List<Object>) jsonResponse.get('body');
+        
+         // Create a list to hold records to insert
+        List<Email_Activity__c> recordsToInsert = new List<Email_Activity__c>();
+        
+        // Loop through the JSON response items
+        for (Object item : bodyArray) {
+            Map<String, Object> itemMap = (Map<String, Object>) item;
+            Email_Activity__c record = new Email_Activity__c();
+            
+            for (String jsonField : fieldMapping.keySet()) {
+                if (itemMap.containsKey(jsonField)) {
+                    String sfField = fieldMapping.get(jsonField);
+                    Object value = itemMap.get(jsonField);
+                    
+                       // Convert integer fields to Decimal
+                    if (value instanceof Integer && (jsonField == 'opens_count' || jsonField == 'clicks_count')) {
+                        //record.put(sfField, String.valueOf(value));
+                        record.put(sfField, Decimal.valueOf((Integer)value));
+                    }
+                       // Convert integer fields to Decimal
+                    if (jsonField == 'last_event_time') {
+                        String valueStr = (String)value;
+                        String yearStr = valueStr.substring(0, 4);
+                        String monthStr = valueStr.substring(5, 7);
+                        String dayStr = valueStr.substring(8, 10);
+                        String hourStr = valueStr.substring(11, 13);
+                        String minuteStr = valueStr.substring(14, 16);
+                        String secondStr = '00'; // Since the provided format doesn't have seconds
+                        
+                        String dateTimeStr = yearStr + '-' + monthStr + '-' + dayStr + 'T' + hourStr + ':' + minuteStr + ':' + secondStr + 'Z';
+                        
+                        Datetime dateTimeValue = Datetime.newInstanceGmt(Integer.valueOf(yearStr), Integer.valueOf(monthStr), Integer.valueOf(dayStr),
+                                                                         Integer.valueOf(hourStr), Integer.valueOf(minuteStr), Integer.valueOf(secondStr));
+                        
+                        record.put(sfField, dateTimeValue);
+                    }                    
+                    else {
+                        record.put(sfField, value);
+                    }
+                }
+            }
+            
+            recordsToInsert.add(record);
+        }
+        
+         // Insert records into Salesforce
+        if (!recordsToInsert.isEmpty()) {
+            Database.SaveResult[] insertResults = Database.insert(recordsToInsert, false);
+            
+            for (Database.SaveResult result : insertResults) {
+                if (!result.isSuccess()) {
+                    for (Database.Error error : result.getErrors()) {
+                        System.debug('Error inserting record: ' + error.getMessage());
+                    }
+                }
+            }
+        }
+        
+    }
+}
