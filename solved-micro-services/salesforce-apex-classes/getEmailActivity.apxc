@@ -12,29 +12,29 @@ public class getEmailActivity {
                 'clicks_count' => 'clicks_count__c',
                 'last_event_time' => 'last_event_time__c'
                 };
-		//Now we will get the Team Timecards - 
-		HttpRequest requestForTeamTimecards = new HttpRequest();
-        HttpResponse responseOfTeamTimecards = new HttpResponse();
+		//Now we will get the data - 
+		HttpRequest requestForGetData = new HttpRequest();
+        HttpResponse responseOfApi = new HttpResponse();
         Http httpReq = new Http();
         // Set the request method and headers
-        requestForTeamTimecards.setMethod('GET');       
-        requestForTeamTimecards.setHeader('Content-Type', 'application/json');
-        requestForTeamTimecards.setHeader('Authorization','SG.2w**************************************************');
+        requestForGetData.setMethod('GET');       
+        requestForGetData.setHeader('Content-Type', 'application/json');
+        requestForGetData.setHeader('Authorization','SG.2wsx8ikjh3ed7ujm9ol0bgt5fr4aq1zxCDE3VFR2BGNH6YUJMI9OLP0BGT5FRAQ2WSX8IK');
         
 		// Set the request URL and timeout
-        requestForTeamTimecards.setEndpoint('https://0c9d-111-118-246-106.ngrok-free.app/get-email-activity'); 
-        requestForTeamTimecards.setTimeout(15000);
-        system.debug('requestForTeamTimecards: '+requestForTeamTimecards);
+        requestForGetData.setEndpoint('https://eecd-111-118-246-106.ngrok-free.app/get-email-activity'); 
+        requestForGetData.setTimeout(15000);
+        system.debug('request: '+requestForGetData);
         
         // Send the HTTP request
-        responseOfTeamTimecards = httpReq.send(requestForTeamTimecards);
+        responseOfApi = httpReq.send(requestForGetData);
         
         // Debug the response
-        system.debug('responseOfTeamTimecards: '+responseOfTeamTimecards);
-        system.debug('responseOfTeamTimecards: '+responseOfTeamTimecards.getBody());
+        system.debug('responseOfApi: '+responseOfApi);
+        system.debug('responseOfApi: '+responseOfApi.getBody());
         
         // Parse the JSON response
-        Map<String, Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(responseOfTeamTimecards.getBody());
+        Map<String, Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(responseOfApi.getBody());
         //system.debug('jsonResponse: '+jsonResponse);
         
         List<Object> bodyArray = (List<Object>) jsonResponse.get('body');

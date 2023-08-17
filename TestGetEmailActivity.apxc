@@ -1,0 +1,35 @@
+@isTest
+private class TestGetEmailActivity {
+
+    @isTest
+    static void testGetActivity() {
+        // Create a mock HTTP response
+        HttpResponse mockResponse = new HttpResponse();
+        mockResponse.setStatusCode(200);
+        mockResponse.setBody('{"body": [{"from_email": "test@example.com", "msg_id": "12345", "subject": "Test Email", "to_email": "recipient@example.com", "status": "Sent", "opens_count": 2, "clicks_count": 1, "last_event_time": "2023-08-17T10:30:00Z"}]}');
+        
+        // Set the mock response for the HTTP callout
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator(mockResponse));
+        
+        // Call the method under test
+        Test.startTest();
+        getEmailActivity.getActivity();
+        Test.stopTest();
+        
+        // Verify the records inserted
+        List<Email_Activity__c> insertedRecords = [SELECT Id, from_email__c, msg_id__c, subject__c, to_email__c, status__c, opens_count__c, clicks_count__c, last_event_time__c FROM Email_Activity__c];
+        System.assertEquals(1, insertedRecords.size());
+        
+        Email_Activity__c insertedRecord = insertedRecords[0];
+        System.assertEquals('test@example.com', insertedRecord.from_email__c);
+        System.assertEquals('12345', insertedRecord.msg_id__c);
+        System.assertEquals('Test Email', insertedRecord.subject__c);
+        System.assertEquals('recipient@example.com', insertedRecord.to_email__c);
+        System.assertEquals('Sent', insertedRecord.status__c);
+        System.assertEquals(2, insertedRecord.opens_count__c);
+        System.assertEquals(1, insertedRecord.clicks_count__c);
+        System.assertEquals(Datetime.newInstanceGmt(2023, 8, 17, 10, 30, 0), insertedRecord.last_event_time__c);
+    }
+}
+
+

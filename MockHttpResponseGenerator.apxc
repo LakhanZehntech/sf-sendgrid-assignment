@@ -1,0 +1,12 @@
+// Mock HTTP callout class
+global class MockHttpResponseGenerator implements HttpCalloutMock {
+    private HttpResponse response;
+
+    global MockHttpResponseGenerator(HttpResponse response) {
+        this.response = response;
+    }
+
+    global HttpResponse respond(HttpRequest request) {
+        return response;
+    }
+}
